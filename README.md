@@ -10,4 +10,7 @@ sebelum melakukan create dan migrasi database pastikan local server XAMPP Apache
 8.jalankan server menggunkan npm start.
 9.Aplikasi sudah dapat berjalan.
 https://vite.dev/guide/
+
+
+
 https://sequelize.org/v5/manual/migrations
