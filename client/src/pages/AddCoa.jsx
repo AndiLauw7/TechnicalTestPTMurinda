@@ -44,7 +44,7 @@ export default function AddCoa() {
     if (kodeAcc.length === 3) return kodeAcc.slice(0, 2);
     if (kodeAcc.length === 4) return kodeAcc.slice(0, 2);
     if (kodeAcc.length === 5) return kodeAcc.slice(0, 3);
-    if (kodeAcc.length === 7) return kodeAcc.slice(0, 5);
+    if (kodeAcc.length === 7) return kodeAcc.slice(0, 4);
     if (kodeAcc.length === 8) return kodeAcc.slice(0, 5);
     return "";
   };
@@ -275,7 +275,6 @@ export default function AddCoa() {
               value={formData.id_matauang}
               onChange={handleChange}
               aria-label="Select currency"
-              required
               disabled={isGeneral}
             >
               <option value="">Select Currency</option>
@@ -290,7 +289,7 @@ export default function AddCoa() {
         <Form.Group className="mb-3" controlId="depart">
           <Form.Check
             type="checkbox"
-            label="Departmental"
+            label="Department"
             name="depart"
             checked={formData.depart}
             onChange={handleChange}
