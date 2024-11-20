@@ -43,6 +43,7 @@ export default function AddCoa() {
     if (kodeAcc.length === 2) return kodeAcc.slice(0, 1);
     if (kodeAcc.length === 3) return kodeAcc.slice(0, 2);
     if (kodeAcc.length === 5) return kodeAcc.slice(0, 3);
+    if (kodeAcc.length === 7) return kodeAcc.slice(0, 5);
     if (kodeAcc.length === 8) return kodeAcc.slice(0, 5);
     return "";
   };
@@ -98,7 +99,8 @@ export default function AddCoa() {
       const selectedCurrency = currencies.find(
         (currency) => currency.id === parseInt(value, 10)
       );
-      const isIDR = selectedCurrency?.ccy === "IDR";
+      const isIDR =
+        selectedCurrency?.ccy === "IDR" || selectedCurrency?.ccy === "SGD";
       setIsGainLossDisabled(!isIDR); // Disable gainloss if currency is not IDR
       setFormData({
         ...formData,
