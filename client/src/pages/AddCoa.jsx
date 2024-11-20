@@ -42,6 +42,7 @@ export default function AddCoa() {
     if (kodeAcc.length === 1) return 0;
     if (kodeAcc.length === 2) return kodeAcc.slice(0, 1);
     if (kodeAcc.length === 3) return kodeAcc.slice(0, 2);
+    if (kodeAcc.length === 4) return kodeAcc.slice(0, 2);
     if (kodeAcc.length === 5) return kodeAcc.slice(0, 3);
     if (kodeAcc.length === 7) return kodeAcc.slice(0, 5);
     if (kodeAcc.length === 8) return kodeAcc.slice(0, 5);
@@ -307,7 +308,14 @@ export default function AddCoa() {
           />
         </Form.Group>
         <Button variant="primary" type="submit">
-          Submit
+          Simpan
+        </Button>
+        <Button
+          variant="danger"
+          className="mx-3"
+          onClick={() => navigate("/data-coa")}
+        >
+          Batal
         </Button>
       </Form>
     </div>
