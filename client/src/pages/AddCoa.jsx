@@ -263,9 +263,8 @@ export default function AddCoa() {
               <option value="None">None</option>
               <option value="Cash/Bank">Cash/Bank</option>
               <option value="Acc Receivable">Acc Receivable</option>
-              <option value="Acc Payable">Acc Payable</option>
-              <option value="Equity">Equity</option>
-              <option value="Revenue">Revenue</option>
+              <option value="Acc Paylable">Acc Paylable</option>
+              <option value="Fixed Asset">Fixed Asset</option>
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3 col-6" controlId="id_matauang">
