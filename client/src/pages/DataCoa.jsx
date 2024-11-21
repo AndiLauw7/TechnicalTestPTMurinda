@@ -40,7 +40,7 @@ export default function DataCoa() {
             navigate("/");
           }}
         >
-          Data Mata Uang
+          Data Mata Uang.
         </Button>
         {dataCoa.length !== 0 ? (
           <div
