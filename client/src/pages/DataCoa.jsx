@@ -24,7 +24,7 @@ export default function DataCoa() {
 
   return (
     <div className="">
-      <div className="container mt-5">
+      <div className="container mt-5 flex item-end">
         <Button
           className="mt-3 mb-3"
           onClick={() => {
@@ -32,6 +32,15 @@ export default function DataCoa() {
           }}
         >
           Add Coa
+        </Button>
+        <Button
+          variant="warning"
+          className="mt-3 mb-3 mx-3"
+          onClick={() => {
+            navigate("/");
+          }}
+        >
+          Data Mata Uang
         </Button>
         {dataCoa.length !== 0 ? (
           <div
@@ -52,7 +61,7 @@ export default function DataCoa() {
                   zIndex: 1,
                 }}
               >
-                <tr>
+                <tr className="text-center">
                   <th>No</th>
                   <th>Kode Acc</th>
                   <th>Nama Acc</th>
@@ -64,6 +73,7 @@ export default function DataCoa() {
                   <th>Gain Los</th>
                   <th>Controll Acc</th>
                   <th>Parent Acc</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -80,6 +90,16 @@ export default function DataCoa() {
                     <td>{Number(item.gainloss) === 1 ? "Y" : ""}</td>
                     <td>{item.controlAcc}</td>
                     <td>{item.parentAcc === 0 ? "" : item.parentAcc}</td>
+                    <td>
+                      <div className="d-flex">
+                        <Button className="mx-2" variant="success">
+                          Update
+                        </Button>
+                        <Button className="" variant="danger">
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
