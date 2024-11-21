@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { API } from "../config/api";
@@ -21,9 +20,9 @@ export default function AddCoa() {
   });
 
   const [currencies, setCurrencies] = useState([]);
-  const [isGeneral, setIsGeneral] = useState(false);
-  const [isDetail, setIsDetail] = useState(false);
-  const [isGainLossDisabled, setIsGainLossDisabled] = useState(true); // State for disabling gainloss
+  const [dataCoa, setDataCoa] = useState([]);
+  const [filteredParents, setFilteredParents] = useState([]);
+  const [isGainLossDisabled, setIsGainLossDisabled] = useState(true);
 
   useEffect(() => {
     const fetchCurrencies = async () => {
@@ -35,78 +34,138 @@ export default function AddCoa() {
         alert("Failed to load currencies. Please try again.");
       }
     };
-    fetchCurrencies();
-  }, []);
 
-  const getParentAcc = (kodeAcc) => {
-    if (kodeAcc.length === 1) return 0;
-    if (kodeAcc.length === 2) return kodeAcc.slice(0, 1);
-    if (kodeAcc.length === 3) return kodeAcc.slice(0, 2);
-    if (kodeAcc.length === 4) return kodeAcc.slice(0, 2);
-    if (kodeAcc.length === 5) return kodeAcc.slice(0, 3);
-    if (kodeAcc.length === 7) return kodeAcc.slice(0, 4);
-    if (kodeAcc.length === 8) return kodeAcc.slice(0, 5);
-    return "";
-  };
+    const fetchDataCoa = async () => {
+      try {
+        const response = await API.get("/getdatacoa");
+        console.log("Data COA:", response.data.data);
+        setDataCoa(response.data.data);
+      } catch (error) {
+        console.error("Failed to get data COA:", error);
+      }
+    };
+
+    fetchCurrencies();
+    fetchDataCoa();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    let autoGroupAcc = "";
-    if (name === "kodeAcc") {
-      const parentAcc = getParentAcc(value);
-      const barisPertama = value.charAt(0);
-      if (barisPertama === "1") autoGroupAcc = "Asset";
-      else if (barisPertama === "2") autoGroupAcc = "Liabilities";
-      else if (barisPertama === "3") autoGroupAcc = "Capital";
-      else if (barisPertama === "4") autoGroupAcc = "Revenue";
-      else if (barisPertama === "5") autoGroupAcc = "COGS";
-      else if (barisPertama === "6") autoGroupAcc = "Expenses";
-      else if (barisPertama === "7") autoGroupAcc = "Order Revenue";
-      else if (barisPertama === "8") autoGroupAcc = "Order Expenses";
+
+    if (name === "tipeAcc" && value === "General") {
       setFormData({
         ...formData,
         [name]: value,
-        parentAcc,
-        groupAcc:
-          formData.tipeAcc === "Detail" ? autoGroupAcc : formData.groupAcc,
+        levelAcc: 1, // Reset levelAcc jika tipeAcc diubah ke General
+        groupAcc: "", // Reset groupAcc jika tipeAcc diubah ke General
       });
-    } else if (name === "tipeAcc" && value === "General") {
-      setIsGeneral(true);
-      setIsDetail(false);
-      setFormData({
-        ...formData,
-        [name]: value,
-        levelAcc: "1",
-      });
+      setFilteredParents([]);
     } else if (name === "tipeAcc" && value === "Detail") {
-      setIsGeneral(false);
-      setIsDetail(true);
-      const barisPertama = formData.kodeAcc.charAt(0);
-      let autoGroupAcc = "";
-      if (barisPertama === "1") autoGroupAcc = "Asset";
-      else if (barisPertama === "2") autoGroupAcc = "Liabilities";
-      else if (barisPertama === "3") autoGroupAcc = "Capital";
-      else if (barisPertama === "4") autoGroupAcc = "Revenue";
-      else if (barisPertama === "5") autoGroupAcc = "COGS";
-      else if (barisPertama === "6") autoGroupAcc = "Expenses";
-      else if (barisPertama === "7") autoGroupAcc = "Order Revenue";
-      else if (barisPertama === "8") autoGroupAcc = "Order Expenses";
       setFormData({
         ...formData,
         [name]: value,
-        groupAcc: autoGroupAcc,
+        levelAcc: 1, // Set default levelAcc to 2 when tipeAcc is Detail
+        parentAcc: "", // Reset parentAcc when tipeAcc is Detail
+        groupAcc: "", // Reset groupAcc when tipeAcc is Detail
+      });
+      setFilteredParents([]); // Clear filtered parents when switching to Detail
+    } else if (name === "levelAcc" && formData.tipeAcc === "General") {
+      const levelBaru = parseInt(value, 10);
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+
+      if (levelBaru > 1) {
+        const parents = dataCoa.filter(
+          (item) =>
+            item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
+        );
+        setFilteredParents(parents);
+      } else {
+        setFilteredParents([]);
+      }
+    } else if (name === "levelAcc" && formData.tipeAcc === "Detail") {
+      const levelBaru = parseInt(value, 10);
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+
+      if (levelBaru > 1) {
+        // Jika tipeAcc Detail, cari parent dari tipeAcc General dengan levelAcc - 1
+        const parents = dataCoa.filter(
+          (item) =>
+            item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
+        );
+        setFilteredParents(parents);
+      } else {
+        setFilteredParents([]);
+      }
+    } else if (
+      name === "parentAcc" &&
+      formData.tipeAcc === "General" &&
+      formData.levelAcc > 1
+    ) {
+      const pilihParent = dataCoa.find(
+        (item) =>
+          parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
+          item.levelAcc === parseInt(formData.levelAcc, 10) - 1
+      );
+
+      if (!pilihParent) {
+        alert("Parent Account tidak valid.");
+        setFormData({
+          ...formData,
+          [name]: "",
+          groupAcc: "",
+        });
+        return;
+      }
+
+      setFormData({
+        ...formData,
+        [name]: value,
+        groupAcc: pilihParent.groupAcc || "", // Isi groupAcc otomatis berdasarkan parentAcc
+      });
+    } else if (
+      name === "parentAcc" &&
+      formData.tipeAcc === "Detail" &&
+      formData.levelAcc > 1
+    ) {
+      // Ketika tipeAcc Detail, cari parentAcc dari tipeAcc General
+      const pilihParent = dataCoa.find(
+        (item) =>
+          parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
+          item.tipeAcc === "General" && // Cek tipeAcc General
+          item.levelAcc === parseInt(formData.levelAcc, 10) - 1 // Cari levelAcc - 1
+      );
+
+      if (!pilihParent) {
+        alert("Parent Account tidak valid.");
+        setFormData({
+          ...formData,
+          [name]: "",
+          groupAcc: "",
+        });
+        return;
+      }
+
+      setFormData({
+        ...formData,
+        [name]: value,
+        groupAcc: pilihParent.groupAcc || "", // Isi groupAcc otomatis berdasarkan parentAcc
       });
     } else if (name === "id_matauang") {
-      const selectedCurrency = currencies.find(
+      const pilihCcy = currencies.find(
         (currency) => currency.id === parseInt(value, 10)
       );
-      const isIDR =
-        selectedCurrency?.ccy === "IDR" || selectedCurrency?.ccy === "SGD";
-      setIsGainLossDisabled(!isIDR); // Disable gainloss if currency is not IDR
+      const isCcy = pilihCcy?.ccy === "IDR" || pilihCcy?.ccy === "SGD";
+      setIsGainLossDisabled(!isCcy);
       setFormData({
         ...formData,
         [name]: value,
-        gainloss: isIDR ? formData.gainloss : false, // Reset gainloss to false if not IDR
+        gainloss: isCcy ? formData.gainloss : false,
       });
     } else {
       setFormData({
@@ -118,36 +177,14 @@ export default function AddCoa() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const currencyExists = currencies.some(
-      (currency) => currency.id === parseInt(formData.id_matauang, 10)
-    );
-
-    if (!currencyExists && formData.id_matauang) {
-      alert("The selected currency does not exist in the system.");
-      setFormData({
-        ...formData,
-        id_matauang: "",
-      });
+    if (!formData.groupAcc) {
+      alert("GroupAcc harus diisi berdasarkan Parent Account.");
       return;
     }
 
     try {
-      const response = await API.post("/adddatacoa", formData);
+      await API.post("/adddatacoa", formData);
       alert("Data saved successfully!");
-      setFormData({
-        kodeAcc: "",
-        namaAcc: "",
-        tipeAcc: "",
-        levelAcc: "",
-        parentAcc: "",
-        groupAcc: "",
-        controlAcc: "",
-        id_matauang: "",
-        depart: false,
-        gainloss: false,
-      });
-      setIsGeneral(false);
       navigate("/data-coa");
     } catch (error) {
       console.error("Failed to submit data:", error);
@@ -202,13 +239,13 @@ export default function AddCoa() {
               <option value="Detail">Detail</option>
             </Form.Select>
           </Form.Group>
+
           <Form.Group className="mb-3 col-6" controlId="level">
             <Form.Label>Level</Form.Label>
             <Form.Select
               name="levelAcc"
               value={formData.levelAcc}
               onChange={handleChange}
-              aria-label="Account level"
               required
             >
               <option value="">Select level</option>
@@ -220,15 +257,33 @@ export default function AddCoa() {
             </Form.Select>
           </Form.Group>
         </div>
-        <Form.Group className="mb-3" controlId="accParent">
-          <Form.Label>Acc Parent</Form.Label>
-          <Form.Control
-            type="text"
+        <Form.Group className="mb-3" controlId="parentAcc">
+          <Form.Label>Parent Acc</Form.Label>
+          <Form.Select
             name="parentAcc"
             value={formData.parentAcc}
-            disabled={isGeneral}
-            placeholder="Masukan kode dengan benar"
-          />
+            onChange={handleChange}
+            // disabled={
+            //   formData.tipeAcc !== "General" ||
+            //   parseInt(formData.levelAcc, 10) <= 1
+            // }
+            disabled={
+              (formData.tipeAcc !== "General" &&
+                formData.tipeAcc !== "Detail") || // Enable for "Detail" as well
+              parseInt(formData.levelAcc, 10) <= 1
+            }
+          >
+            <option value="">Select Parent Acc</option>
+            {filteredParents.length > 0 ? (
+              filteredParents.map((parent) => (
+                <option key={parent.kodeAcc} value={parent.kodeAcc}>
+                  {parent.namaAcc} ({parent.kodeAcc})
+                </option>
+              ))
+            ) : (
+              <option value="">No valid Parent Accounts available</option>
+            )}
+          </Form.Select>
         </Form.Group>
         <Form.Group className="mb-3" controlId="accGroup">
           <Form.Label>Acc Group</Form.Label>
@@ -237,7 +292,7 @@ export default function AddCoa() {
             value={formData.groupAcc}
             onChange={handleChange}
             aria-label="Pilih Acc Group"
-            disabled={isDetail}
+            disabled={formData.levelAcc > 1} // Disabled based on levelAcc
           >
             <option value="">Pilih Acc Group</option>
             <option value="Asset">Asset</option>
@@ -245,9 +300,9 @@ export default function AddCoa() {
             <option value="Capital">Capital</option>
             <option value="Revenue">Revenue</option>
             <option value="COGS">COGS</option>
-            <option value="Expences">Expenses</option>
+            <option value="Expenses">Expenses</option>
             <option value="Order Revenue">Order Revenue</option>
-            <option value="Order Expences">Order Expenses</option>
+            <option value="Order Expenses">Order Expenses</option>
           </Form.Select>
         </Form.Group>
         <div className="row">
@@ -258,7 +313,7 @@ export default function AddCoa() {
               value={formData.controlAcc}
               onChange={handleChange}
               aria-label="Account control"
-              disabled={isGeneral}
+              disabled={formData.levelAcc <= 1}
             >
               <option value="">Select account control</option>
               <option value="None">None</option>
@@ -275,7 +330,8 @@ export default function AddCoa() {
               value={formData.id_matauang}
               onChange={handleChange}
               aria-label="Select currency"
-              disabled={isGeneral}
+              // disabled={isGeneral}
+              disabled={formData.levelAcc <= 1}
             >
               <option value="">Select Currency</option>
               {currencies.map((currency) => (
@@ -286,36 +342,36 @@ export default function AddCoa() {
             </Form.Select>
           </Form.Group>
         </div>
-        <Form.Group className="mb-3" controlId="depart">
+
+        <div className="form-check">
           <Form.Check
             type="checkbox"
-            label="Department"
             name="depart"
+            label="Department"
             checked={formData.depart}
             onChange={handleChange}
-            disabled={isGeneral}
+            disabled={formData.levelAcc <= 1}
           />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="gainloss">
+        </div>
+        <div className="form-check">
           <Form.Check
             type="checkbox"
-            label="Gain/Loss"
             name="gainloss"
+            label="Gain Loss"
             checked={formData.gainloss}
             onChange={handleChange}
             disabled={isGainLossDisabled}
+            // disabled={formData.levelAcc <= 1}
           />
-        </Form.Group>
-        <Button variant="primary" type="submit">
-          Simpan
-        </Button>
-        <Button
-          variant="danger"
-          className="mx-3"
-          onClick={() => navigate("/data-coa")}
-        >
-          Batal
-        </Button>
+        </div>
+        <div className="flex row mt-3">
+          <Button variant="primary" className="col-3 " type="submit">
+            Simpan
+          </Button>
+          <Button variant="danger" className="col-3 mx-3" type="submit">
+            Batal
+          </Button>
+        </div>
       </Form>
     </div>
   );
