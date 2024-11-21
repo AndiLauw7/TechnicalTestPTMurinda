@@ -269,7 +269,7 @@ export default function AddCoa() {
             // }
             disabled={
               (formData.tipeAcc !== "General" &&
-                formData.tipeAcc !== "Detail") || // Enable for "Detail" as well
+                formData.tipeAcc !== "Detail") ||
               parseInt(formData.levelAcc, 10) <= 1
             }
           >
@@ -292,7 +292,7 @@ export default function AddCoa() {
             value={formData.groupAcc}
             onChange={handleChange}
             aria-label="Pilih Acc Group"
-            disabled={formData.levelAcc > 1} // Disabled based on levelAcc
+            disabled={formData.levelAcc > 1}
           >
             <option value="">Pilih Acc Group</option>
             <option value="Asset">Asset</option>
