@@ -4,8 +4,12 @@ import { API } from "../config/api";
 import Table from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
+
 export default function DataCoa() {
   const [dataCoa, setDataCoa] = useState([]);
+  const [idDelete, setDeleteId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // State untuk halaman saat ini
+  const [itemsPerPage] = useState(5); // Jumlah item per halaman
   const navigate = useNavigate();
 
   const getDataCoa = async () => {
@@ -18,9 +22,42 @@ export default function DataCoa() {
     }
   };
 
+  const handleDelete = async (id) => {
+    setDeleteId(id);
+  };
+
+  const deleteId = async (id) => {
+    try {
+      const response = await API.delete(`/deletecoa/${id}`);
+      console.log("Data deleted:", response);
+      getDataCoa();
+      navigate("/data-coa");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleUpdate = async (coa) => {
+    navigate(`/update-coa/${coa.id}`, { state: coa });
+  };
+
   useEffect(() => {
     getDataCoa();
-  }, []);
+    if (idDelete) {
+      deleteId(idDelete);
+    }
+  }, [idDelete]);
+
+  // Logika untuk menampilkan data berdasarkan halaman
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = dataCoa.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Menghitung total halaman
+  const totalPages = Math.ceil(dataCoa.length / itemsPerPage);
+
+  // Fungsi untuk berpindah halaman
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div className="">
@@ -40,7 +77,7 @@ export default function DataCoa() {
             navigate("/");
           }}
         >
-          Data Mata Uang.
+          Data Mata Uang
         </Button>
         {dataCoa.length !== 0 ? (
           <div
@@ -77,7 +114,7 @@ export default function DataCoa() {
                 </tr>
               </thead>
               <tbody>
-                {dataCoa.map((item, index) => (
+                {currentItems.map((item, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
                     <td>{item.kodeAcc}</td>
@@ -92,10 +129,19 @@ export default function DataCoa() {
                     <td>{item.parentAcc === 0 ? "" : item.parentAcc}</td>
                     <td>
                       <div className="d-flex">
-                        <Button className="mx-2" variant="success">
+                        <Button
+                          className="mx-2"
+                          variant="success"
+                          onClick={() => handleUpdate(item)}
+                        >
                           Update
                         </Button>
-                        <Button className="" variant="danger">
+
+                        <Button
+                          className=""
+                          variant="danger"
+                          onClick={() => handleDelete(item.id)}
+                        >
                           Delete
                         </Button>
                       </div>
@@ -104,6 +150,34 @@ export default function DataCoa() {
                 ))}
               </tbody>
             </Table>
+
+            {/* Pagination Controls */}
+            <div className="d-flex justify-content-center mt-3 mb-3">
+              <Button
+                variant="light"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Prev
+              </Button>
+              {[...Array(totalPages)].map((_, index) => (
+                <Button
+                  key={index}
+                  variant="light"
+                  onClick={() => paginate(index + 1)}
+                  active={currentPage === index + 1}
+                >
+                  {index + 1}
+                </Button>
+              ))}
+              <Button
+                variant="light"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="text-center pt-5">

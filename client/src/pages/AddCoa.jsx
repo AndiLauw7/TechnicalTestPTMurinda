@@ -184,7 +184,7 @@ export default function AddCoa() {
 
     try {
       await API.post("/adddatacoa", formData);
-      alert("Data saved successfully!");
+      alert("Simpadn data Succes");
       navigate("/data-coa");
     } catch (error) {
       console.error("Failed to submit data:", error);
@@ -368,7 +368,12 @@ export default function AddCoa() {
           <Button variant="primary" className="col-3 " type="submit">
             Simpan
           </Button>
-          <Button variant="danger" className="col-3 mx-3" type="submit">
+          <Button
+            variant="danger"
+            className="col-3 mx-3"
+            type="submit"
+            onClick={() => navigate("/data-coa")}
+          >
             Batal
           </Button>
         </div>

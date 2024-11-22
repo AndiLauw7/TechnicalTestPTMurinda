@@ -63,3 +63,61 @@ exports.getDataMataUangById = async (req, res) => {
     });
   }
 };
+
+exports.deleteMataUangByid = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const dataCurrency = await tb_mtuang.findOne({ where: { id } });
+
+    if (!dataCurrency) {
+      return req.status(404).send({
+        status: "Failed",
+        message: "Siswa tidak ditemukan",
+      });
+    }
+    await tb_mtuang.destroy({ where: { id } });
+    res.status(200).send({
+      status: "succes",
+      message: `Siswa dengan id ${id} berhasil dihapus`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      status: "failed",
+      message: "Server Error",
+    });
+  }
+};
+
+exports.updateCurrency = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [updated] = await tb_mtuang.update(req.body, {
+      where: { id },
+    });
+    if (updated) {
+      const updatedCurrency = await tb_mtuang.findOne({ where: { id } });
+      res.send({
+        status: "success",
+        data: {
+          id: updatedCurrency.id,
+          ccy: updatedCurrency.ccy,
+          currencyName: updatedCurrency.currencyName,
+          rate: updatedCurrency.rate,
+          std: updatedCurrency.std,
+        },
+      });
+    } else {
+      res.status(404).send({
+        statu: "failed",
+        message: "CCy not Found",
+      });
+    }
+  } catch (error) {
+    res.status(500).send({
+      status: "failed",
+      message: "internal server error",
+      error: error.message,
+    });
+  }
+};
