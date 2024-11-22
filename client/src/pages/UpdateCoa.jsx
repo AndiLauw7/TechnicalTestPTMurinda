@@ -37,7 +37,25 @@ export default function UpdateCoa() {
     fetchData();
   }, []);
 
+  // useEffect(() => {
+  //   if (location.state) {
+  //     setForm(location.state);
+  //   } else {
+  //     fetchCoaData(id);
+  //   }
+  // }, [location.state, id]);
+
   useEffect(() => {
+    const fetchCoaData = async (id) => {
+      try {
+        const response = await API.get(`/getdatacoa/${id}`);
+        console.log("API Response:", response.data);
+        setDataCoa(response.data?.data || []);
+        console.log("Data COA after setting state:", response.data?.data);
+      } catch (error) {
+        console.log("Error fetching COA data:", error);
+      }
+    };
     if (location.state) {
       setForm(location.state);
     } else {
@@ -45,16 +63,6 @@ export default function UpdateCoa() {
     }
   }, [location.state, id]);
 
-  const fetchCoaData = async (id) => {
-    try {
-      const response = await API.get(`/getdatacoa/${id}`);
-      setForm(response.data?.data || {});
-    } catch (error) {
-      console.log(error, "Error fetching COA data");
-    }
-  };
-
-  // Handle form field change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({
@@ -67,7 +75,7 @@ export default function UpdateCoa() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await API.patch(`/updatecoa/${id}`, form);
+      await API.patch(`/update-coa/${id}`, form);
       alert("Data successfully updated");
       navigate("/data-coa");
     } catch (error) {
@@ -76,12 +84,25 @@ export default function UpdateCoa() {
     }
   };
 
-  // Filter parent accounts based on level
+  // useEffect(() => {
+  //   console.log("Form Level:", form.levelAcc);
+  //   console.log("COA Data:", dataCoa);
+
+  //   const filteredParents = dataCoa.filter((coa) => {
+  //     console.log("Checking COA:", coa); // Log each COA
+  //     const levelAcc = parseInt(coa.levelAcc || "0", 10);
+  //     return levelAcc < parseInt(form.levelAcc, 10);
+  //   });
+
+  //   console.log("Filtered Parents:", filteredParents);
+  // }, [dataCoa, form.levelAcc]);
+
   const filteredParents = dataCoa.filter(
     (coa) => parseInt(coa.levelAcc, 10) < parseInt(form.levelAcc, 10)
   );
+  // console.log(dataCoa);
 
-  // Reset form to initial state
+  // console.log("ini filter parents", filteredParents);
   const resetForm = () => {
     setForm({
       id: null,
@@ -180,7 +201,7 @@ export default function UpdateCoa() {
                 </option>
               ))
             ) : (
-              <option value="">No valid Parent Accounts available</option>
+              <option value=""></option>
             )}
           </Form.Select>
         </Form.Group>
