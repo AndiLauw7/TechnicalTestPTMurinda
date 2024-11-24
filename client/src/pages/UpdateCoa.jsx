@@ -8,6 +8,7 @@ export default function UpdateCoa() {
   const navigate = useNavigate();
   const [dataCurrency, setDataCurrency] = useState([]);
   const [dataCoa, setDataCoa] = useState([]);
+  const [Coa, setCoa] = useState([]);
   const [form, setForm] = useState({
     id: null,
     id_matauang: "",
@@ -22,47 +23,56 @@ export default function UpdateCoa() {
     gainloss: false,
   });
   const location = useLocation();
-  const { id } = useParams();
+  console.log(location);
 
-  // Fetch data mata uang
+  const { id } = useParams();
+  // console.log(id);
+
+  // Fetch data mata uang (currency)
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await API.get("/get-mata-uang");
         setDataCurrency(response.data?.data || []);
+        console.log(response.data.data);
       } catch (err) {
         console.error("Error fetching data:", err);
       }
     };
+    const fetchDataCoa = async () => {
+      try {
+        const response = await API.get("/getdatacoa");
+        setCoa(response.data.data);
+        console.log(response.data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchDataCoa();
     fetchData();
   }, []);
 
-  // useEffect(() => {
-  //   if (location.state) {
-  //     setForm(location.state);
-  //   } else {
-  //     fetchCoaData(id);
-  //   }
-  // }, [location.state, id]);
-
   useEffect(() => {
-    const fetchCoaData = async (id) => {
-      try {
-        const response = await API.get(`/getdatacoa/${id}`);
-        console.log("API Response:", response.data);
-        setDataCoa(response.data?.data || []);
-        console.log("Data COA after setting state:", response.data?.data);
-      } catch (error) {
-        console.log("Error fetching COA data:", error);
-      }
-    };
     if (location.state) {
       setForm(location.state);
     } else {
+      // Otherwise, fetch COA data using the id
+      const fetchCoaData = async (id) => {
+        try {
+          const response = await API.get(`/getdatacoa/${id}`);
+          console.log("API Response:", response.data.data);
+          setDataCoa(response.data?.data || []);
+        } catch (error) {
+          console.log("Error fetching COA data:", error);
+        }
+      };
+
       fetchCoaData(id);
+      // console.log(fetchCoaData);
     }
   }, [location.state, id]);
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({
@@ -84,25 +94,23 @@ export default function UpdateCoa() {
     }
   };
 
-  // useEffect(() => {
-  //   console.log("Form Level:", form.levelAcc);
-  //   console.log("COA Data:", dataCoa);
+  // Filter parents based on levelAcc
+  // const filteredParents = Coa.filter(
+  //   (coa) =>
+  //     parseInt(coa.levelAcc, 10) < parseInt(form.levelAcc, 10) &&
+  //     coa.levelAcc > 1
+  // );
+  const filteredParents = Coa.filter((coa) => {
+    const levelAcc = parseInt(coa.levelAcc, 10);
+    const formLevel = parseInt(form.levelAcc, 10);
 
-  //   const filteredParents = dataCoa.filter((coa) => {
-  //     console.log("Checking COA:", coa); // Log each COA
-  //     const levelAcc = parseInt(coa.levelAcc || "0", 10);
-  //     return levelAcc < parseInt(form.levelAcc, 10);
-  //   });
-
-  //   console.log("Filtered Parents:", filteredParents);
-  // }, [dataCoa, form.levelAcc]);
-
-  const filteredParents = dataCoa.filter(
-    (coa) => parseInt(coa.levelAcc, 10) < parseInt(form.levelAcc, 10)
-  );
-  // console.log(dataCoa);
+    // Check if levelAcc and formLevel are valid numbers before comparing
+    return !isNaN(levelAcc) && !isNaN(formLevel) && levelAcc < formLevel;
+  });
 
   // console.log("ini filter parents", filteredParents);
+
+  // Reset form to initial state
   const resetForm = () => {
     setForm({
       id: null,
@@ -201,7 +209,7 @@ export default function UpdateCoa() {
                 </option>
               ))
             ) : (
-              <option value=""></option>
+              <option value="">No parents available</option>
             )}
           </Form.Select>
         </Form.Group>

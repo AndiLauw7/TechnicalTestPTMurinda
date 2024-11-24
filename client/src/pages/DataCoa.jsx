@@ -39,7 +39,9 @@ export default function DataCoa() {
 
   const handleUpdate = async (coa) => {
     navigate(`/update-coa/${coa.id}`, { state: coa });
+    console.log("ini", coa);
   };
+  
 
   useEffect(() => {
     getDataCoa();
