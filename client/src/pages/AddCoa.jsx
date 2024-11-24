@@ -316,7 +316,7 @@ const handleChange = (e) => {
             >
               <option value="">Select account control</option>
               <option value="None">None</option>
-              <option value="Cash/Bank">Cash/Bank</option>
+              <option value="Cash/Bnak">Cash/Bank</option>
               <option value="Acc Receivable">Acc Receivable</option>
               <option value="Acc Paylable">Acc Paylable</option>
               <option value="Fixed Asset">Fixed Asset</option>

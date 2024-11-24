@@ -123,7 +123,7 @@ exports.deleteCoa = async (req, res) => {
     if (dataCoa.id_matauang !== null) {
       return res.status(400).send({
         status: "failed",
-        message: `Data COA dengan id ${id} tidak dapat dihapus karena memiliki nilai currency`,
+        message: `Data COA dengan id tidak dapat dihapus karena memiliki nilai currency`,
       });
     }
     // const relasi = await tb_coa.count({

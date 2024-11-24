@@ -10,7 +10,9 @@ export default function DataCoa() {
   const [idDelete, setDeleteId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1); // State untuk halaman saat ini
   const [itemsPerPage] = useState(5); // Jumlah item per halaman
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  // console.log(idDelete);
 
   const getDataCoa = async () => {
     try {
@@ -21,19 +23,41 @@ export default function DataCoa() {
       console.log("Get data CoA gagal", error);
     }
   };
-
   const handleDelete = async (id) => {
     setDeleteId(id);
   };
 
   const deleteId = async (id) => {
+    // try {
+    //   const response = await API.delete(`/deletecoa/${id}`);
+    //   console.log("Data deleted:", response.data.data);
+    //   getDataCoa();
+    //   navigate("/data-coa");
+    // } catch (error) {
+
+    //   console.log(error);
+    // }
     try {
       const response = await API.delete(`/deletecoa/${id}`);
-      console.log("Data deleted:", response);
+      console.log("Data deleted:", response.data.data);
+      setErrorMessage("");
       getDataCoa();
       navigate("/data-coa");
     } catch (error) {
-      console.log(error);
+      // Tangani pesan error dari API
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setErrorMessage(error.response.data.message); // Simpan pesan error
+      } else {
+        setErrorMessage("Terjadi kesalahan saat menghapus data.");
+      }
+      // console.error("Error deleting data:", error);
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
     }
   };
 
@@ -41,10 +65,10 @@ export default function DataCoa() {
     navigate(`/update-coa/${coa.id}`, { state: coa });
     console.log("ini", coa);
   };
-  
 
   useEffect(() => {
     getDataCoa();
+
     if (idDelete) {
       deleteId(idDelete);
     }
@@ -81,6 +105,11 @@ export default function DataCoa() {
         >
           Data Mata Uang
         </Button>
+        {errorMessage && (
+          <div className="alert alert-danger text-center fw-bold" role="alert">
+            {errorMessage}
+          </div>
+        )}
         {dataCoa.length !== 0 ? (
           <div
             style={{

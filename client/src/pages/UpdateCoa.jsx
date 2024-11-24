@@ -9,6 +9,7 @@ export default function UpdateCoa() {
   const [dataCurrency, setDataCurrency] = useState([]);
   const [dataCoa, setDataCoa] = useState([]);
   const [Coa, setCoa] = useState([]);
+  const [filteredParents, setFilteredParents] = useState([]);
   const [form, setForm] = useState({
     id: null,
     id_matauang: "",
@@ -52,6 +53,25 @@ export default function UpdateCoa() {
     fetchData();
   }, []);
 
+  // ini untuk nilai parent Acc ketika pertama kali dirender
+  useEffect(() => {
+    if (form.levelAcc > 1) {
+      const levelBaru = parseInt(form.levelAcc, 10);
+      const parents = Coa.filter(
+        (item) => item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
+      );
+      setFilteredParents(parents);
+      if (parents.length > 0 && !form.parentAcc) {
+        setForm((parentForm) => ({
+          ...parentForm,
+          parentAcc: parents[0].kodeAcc,
+        }));
+      }
+    } else {
+      setFilteredParents([]);
+    }
+  }, [form.levelAcc, Coa]);
+
   useEffect(() => {
     if (location.state) {
       setForm(location.state);
@@ -75,6 +95,45 @@ export default function UpdateCoa() {
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (name === "levelAcc") {
+      const levelBaru = parseInt(value, 10);
+      setForm({
+        ...form,
+        [name]: value,
+        parentAcc: "",
+        groupAcc: "",
+      });
+      if (levelBaru > 1) {
+        const parents = Coa.filter(
+          (item) =>
+            item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
+        );
+        setFilteredParents(parents);
+        if (parents.length > 0) {
+          setForm((nilaiParents) => ({
+            ...nilaiParents,
+            parentAcc: parents[0].kodeAcc,
+          }));
+        }
+      } else {
+        setFilteredParents([]);
+      }
+    } else if (name === "parentAcc") {
+      const pilihParents = Coa.find(
+        (item) =>
+          parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
+          item.levelAcc === parseInt(form.levelAcc, 10) - 1
+      );
+      if (!pilihParents) {
+        alert("parent acc tidak valid");
+        setForm({
+          ...form,
+          [name]: "",
+          groupAcc: "",
+        });
+        return;
+      }
+    }
     setForm({
       ...form,
       [name]: type === "checkbox" ? checked : value,
@@ -100,13 +159,14 @@ export default function UpdateCoa() {
   //     parseInt(coa.levelAcc, 10) < parseInt(form.levelAcc, 10) &&
   //     coa.levelAcc > 1
   // );
-  const filteredParents = Coa.filter((coa) => {
-    const levelAcc = parseInt(coa.levelAcc, 10);
-    const formLevel = parseInt(form.levelAcc, 10);
 
-    // Check if levelAcc and formLevel are valid numbers before comparing
-    return !isNaN(levelAcc) && !isNaN(formLevel) && levelAcc < formLevel;
-  });
+  // const filteredParents = Coa.filter((coa) => {
+  //   const levelAcc = parseInt(coa.levelAcc, 10);
+  //   const formLevel = parseInt(form.levelAcc, 10);
+
+  //   // Check if levelAcc and formLevel are valid numbers before comparing
+  //   return !isNaN(levelAcc) && !isNaN(formLevel) && levelAcc < formLevel;
+  // });
 
   // console.log("ini filter parents", filteredParents);
 
@@ -199,7 +259,12 @@ export default function UpdateCoa() {
             name="parentAcc"
             value={form.parentAcc}
             onChange={handleChange}
-            disabled={parseInt(form.levelAcc, 10) <= 1}
+            // disabled={
+            //   parseInt(form.levelAcc, 10) <= 1}
+            disabled={
+              (form.tipeAcc !== "General" && form.tipeAcc !== "Detail") ||
+              parseInt(form.levelAcc, 10) <= 1
+            }
           >
             <option value="">Select Parent Acc</option>
             {filteredParents.length > 0 ? (
