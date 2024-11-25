@@ -39,6 +39,7 @@ export default function AddCurrency() {
   return (
     <div className="container">
       <Form className="px-4 py-4 mx-auto my-5 col-6" onSubmit={handleSubmit}>
+        <h1 className="text-center mb-3">Add Mata Uang</h1>
         <div className="mb-3">
           <Button onClick={() => navigate("/")}>Back Currency</Button>
         </div>

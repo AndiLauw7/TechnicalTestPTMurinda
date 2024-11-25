@@ -44,7 +44,6 @@ export default function UpdateCcy() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // API request untuk memperbarui data mata uang (sesuaikan dengan API Anda)
       const response = await API.patch(`/updateccy/${ccyData.id}`, formData);
       console.log("Currency updated successfully", response);
       navigate("/"); // Navigasi kembali ke halaman Data Currency setelah update
@@ -56,7 +55,8 @@ export default function UpdateCcy() {
   return (
     <div className="container">
       <Form className="px-4 py-4 mx-auto my-5 col-6" onSubmit={handleSubmit}>
-        <div className="mb-3">
+        <h1 className="text-center mb-3">Update Mata Uang</h1>
+        <div className="mb-3 d-flex">
           <Button onClick={() => navigate("/")}>Back to Data Currency</Button>
         </div>
 
@@ -78,7 +78,6 @@ export default function UpdateCcy() {
             type="text"
             name="currencyName"
             value={formData.currencyName}
-            s
             onChange={handleChange}
             placeholder="Enter currency name"
             required

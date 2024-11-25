@@ -241,6 +241,7 @@ export default function UpdateCoa() {
   return (
     <div className="container">
       <Form className="px-4 py-4 mx-auto my-5 col-6" onSubmit={handleUpdate}>
+        <h1 className="text-center mb-3">Update COA</h1>
         <div className="mb-3">
           <Button onClick={() => navigate("/data-coa")}>
             Back to Data COA
