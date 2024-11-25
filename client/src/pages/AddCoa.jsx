@@ -19,9 +19,9 @@ export default function AddCoa() {
     gainloss: false,
   });
 
-  const [currencies, setCurrencies] = useState([]);
   const [dataCoa, setDataCoa] = useState([]);
   const [filteredParents, setFilteredParents] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
   const [isGainLossDisabled, setIsGainLossDisabled] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -161,7 +161,8 @@ export default function AddCoa() {
       const pilihCcy = currencies.find(
         (currency) => currency.id === parseInt(value, 10)
       );
-      const isCcy = pilihCcy?.ccy === "IDR" || pilihCcy?.ccy === "SGD";
+      const isCcy = pilihCcy?.std === "Y";
+      // || pilihCcy?.ccy === "SGD";
       setIsGainLossDisabled(!isCcy);
       setFormData({
         ...formData,

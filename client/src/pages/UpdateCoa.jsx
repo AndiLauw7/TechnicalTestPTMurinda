@@ -175,13 +175,13 @@ export default function UpdateCoa() {
       const pilihCcy = dataCurrency.find(
         (currency) => currency.id === parseInt(value, 10)
       );
-      const isCcy = pilihCcy?.ccy === "IDR" || pilihCcy?.ccy === "SGD";
-
-      setIsGainLossDisabled(!isCcy); // Atur apakah gain/loss disabled
+      const isCcy = pilihCcy?.std === "Y";
+      // || pilihCcy?.ccy === "SGD";
+      setIsGainLossDisabled(!isCcy);
       setForm({
         ...form,
         [name]: value,
-        gainloss: isCcy ? form.gainloss : false, // Reset gainloss jika tidak memenuhi syarat
+        gainloss: isCcy ? form.gainloss : false,
       });
     } else {
       setForm({
