@@ -18,25 +18,24 @@ export default function DataCoa() {
     try {
       const response = await API.get("/getdatacoa");
       setDataCoa(response.data.data);
-      console.log(response.data.data);
+      // console.log(response.data.data);
     } catch (error) {
-      console.log("Get data CoA gagal", error);
+      // console.log("Get data CoA gagal", error);
+      return error;
     }
   };
+
+  // const handleTimer = async () => {
+  //   setTimeout(() => {
+  //     setErrorMessage("");
+  //     getDataCoa();
+  //   }, 5000);
+  // };
   const handleDelete = async (id) => {
     setDeleteId(id);
   };
 
   const deleteId = async (id) => {
-    // try {
-    //   const response = await API.delete(`/deletecoa/${id}`);
-    //   console.log("Data deleted:", response.data.data);
-    //   getDataCoa();
-    //   navigate("/data-coa");
-    // } catch (error) {
-
-    //   console.log(error);
-    // }
     try {
       const response = await API.delete(`/deletecoa/${id}`);
       console.log("Data deleted:", response.data.data);
@@ -50,28 +49,39 @@ export default function DataCoa() {
         error.response.data &&
         error.response.data.message
       ) {
-        setErrorMessage(error.response.data.message); // Simpan pesan error
+        setErrorMessage(error.response.data.message);
       } else {
         setErrorMessage("Terjadi kesalahan saat menghapus data.");
       }
       // console.error("Error deleting data:", error);
-      setTimeout(() => {
-        setErrorMessage("");
-      }, 3000);
+      // setTimeout(() => {
+      //   setErrorMessage("");
+      // }, 3000);
     }
   };
 
   const handleUpdate = async (coa) => {
+    if (coa.id_matauang) {
+      return setErrorMessage(
+        "Tidak Dapat megupdate data karena memiliki nilai mata uang"
+      );
+    }
     navigate(`/update-coa/${coa.id}`, { state: coa });
+
     console.log("ini", coa);
   };
 
   useEffect(() => {
-    getDataCoa();
-
     if (idDelete) {
       deleteId(idDelete);
     }
+
+    setTimeout(() => {
+      setErrorMessage("");
+      // window.location.reload();
+      getDataCoa();
+    }, 3000);
+    getDataCoa();
   }, [idDelete]);
 
   // Logika untuk menampilkan data berdasarkan halaman

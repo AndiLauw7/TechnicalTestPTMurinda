@@ -7,6 +7,8 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 export default function UpdateCoa() {
   const navigate = useNavigate();
   const [dataCurrency, setDataCurrency] = useState([]);
+ 
+  const [isGainLossDisabled, setIsGainLossDisabled] = useState(true);
   const [dataCoa, setDataCoa] = useState([]);
   const [Coa, setCoa] = useState([]);
   const [filteredParents, setFilteredParents] = useState([]);
@@ -82,6 +84,20 @@ export default function UpdateCoa() {
           const response = await API.get(`/getdatacoa/${id}`);
           console.log("API Response:", response.data.data);
           setDataCoa(response.data?.data || []);
+          const coaData = response.data?.data || {};
+          setForm({
+            id: coaData.id || null,
+            id_matauang: coaData.id_matauang || "",
+            kodeAcc: coaData.kodeAcc || "",
+            namaAcc: coaData.namaAcc || "",
+            tipeAcc: coaData.tipeAcc || "",
+            levelAcc: coaData.levelAcc || "",
+            parentAcc: coaData.parentAcc || "",
+            groupAcc: coaData.groupAcc || "",
+            controlAcc: coaData.controlAcc || "",
+            depart: coaData.depart || false, // Set checkbox sesuai dengan data dari API
+            gainloss: coaData.gainloss || false, // Set checkbox sesuai dengan data dari API
+          });
         } catch (error) {
           console.log("Error fetching COA data:", error);
         }
@@ -95,49 +111,84 @@ export default function UpdateCoa() {
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (name === "levelAcc") {
-      const levelBaru = parseInt(value, 10);
+    // if (name === "levelAcc") {
+    //   const levelBaru = parseInt(value, 10);
+    //   setForm({
+    //     ...form,
+    //     [name]: value,
+    //     parentAcc: "",
+    //     groupAcc: "",
+    //   });
+    //   if (levelBaru > 1) {
+    //     const parents = Coa.filter(
+    //       (item) =>
+    //         item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
+    //     );
+    //     setFilteredParents(parents);
+    //     if (parents.length > 0) {
+    //       setForm((nilaiParents) => ({
+    //         ...nilaiParents,
+    //         parentAcc: parents[0].kodeAcc,
+    //       }));
+    //     }
+    //   } else {
+    //     setFilteredParents([]);
+    //   }
+    // } else if (name === "parentAcc") {
+    //   const pilihParents = Coa.find(
+    //     (item) =>
+    //       parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
+    //       item.levelAcc === parseInt(form.levelAcc, 10) - 1
+    //   );
+    //   if (!pilihParents) {
+    //     alert("parent acc tidak valid");
+    //     setForm({
+    //       ...form,
+    //       [name]: "",
+    //       groupAcc: "",
+    //     });
+    //     return;
+    //   }
+    // } else if (name === "id_matauang") {
+    //   const pilihCcy = dataCurrency.find(
+    //     (currency) => currency.id === parseInt(value, 10)
+    //   );
+    //   const isCcy = pilihCcy?.ccy === "IDR" || pilihCcy?.ccy === "SGD";
+    //   setIsGainLossDisabled(!isCcy);
+    //   setForm({
+    //     ...form,
+    //     [name]: value,
+    //     gainloss: isCcy ? form.gainloss : false,
+    //   });
+    //   setForm({
+    //     ...form,
+    //     [name]: type === "checkbox" ? checked : value,
+    //   });
+    // }
+
+    if (type === "checkbox") {
+      setForm({
+        ...form,
+        [name]: checked, // Prioritaskan perubahan manual untuk checkbox
+      });
+    } else if (name === "id_matauang") {
+      const pilihCcy = dataCurrency.find(
+        (currency) => currency.id === parseInt(value, 10)
+      );
+      const isCcy = pilihCcy?.ccy === "IDR" || pilihCcy?.ccy === "SGD";
+
+      setIsGainLossDisabled(!isCcy); // Atur apakah gain/loss disabled
       setForm({
         ...form,
         [name]: value,
-        parentAcc: "",
-        groupAcc: "",
+        gainloss: isCcy ? form.gainloss : false, // Reset gainloss jika tidak memenuhi syarat
       });
-      if (levelBaru > 1) {
-        const parents = Coa.filter(
-          (item) =>
-            item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
-        );
-        setFilteredParents(parents);
-        if (parents.length > 0) {
-          setForm((nilaiParents) => ({
-            ...nilaiParents,
-            parentAcc: parents[0].kodeAcc,
-          }));
-        }
-      } else {
-        setFilteredParents([]);
-      }
-    } else if (name === "parentAcc") {
-      const pilihParents = Coa.find(
-        (item) =>
-          parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
-          item.levelAcc === parseInt(form.levelAcc, 10) - 1
-      );
-      if (!pilihParents) {
-        alert("parent acc tidak valid");
-        setForm({
-          ...form,
-          [name]: "",
-          groupAcc: "",
-        });
-        return;
-      }
+    } else {
+      setForm({
+        ...form,
+        [name]: value,
+      });
     }
-    setForm({
-      ...form,
-      [name]: type === "checkbox" ? checked : value,
-    });
   };
 
   // Handle update COA
@@ -353,7 +404,8 @@ export default function UpdateCoa() {
             label="Gain/Loss"
             checked={form.gainloss}
             onChange={handleChange}
-            disabled={form.levelAcc <= 1}
+            // disabled={form.levelAcc <= 1}
+            disabled={isGainLossDisabled}
           />
         </div>
 

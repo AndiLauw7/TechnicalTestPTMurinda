@@ -23,156 +23,158 @@ export default function AddCoa() {
   const [dataCoa, setDataCoa] = useState([]);
   const [filteredParents, setFilteredParents] = useState([]);
   const [isGainLossDisabled, setIsGainLossDisabled] = useState(true);
-console.log("ini filtered", filteredParents);
+  const [errorMessage, setErrorMessage] = useState("");
 
-useEffect(() => {
-  const fetchCurrencies = async () => {
-    try {
-      const response = await API.get("/get-mata-uang");
-      setCurrencies(response.data.data);
-    } catch (error) {
-      console.error("Failed to load currencies:", error);
-      alert("Failed to load currencies. Please try again.");
-    }
-  };
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await API.get("/get-mata-uang");
+        setCurrencies(response.data.data);
+      } catch (error) {
+        console.error("Failed to load currencies:", error);
+        alert("Failed to load currencies. Please try again.");
+      }
+    };
 
-  const fetchDataCoa = async () => {
-    try {
-      const response = await API.get("/getdatacoa");
-      console.log("Data COA:", response.data.data);
-      setDataCoa(response.data.data);
-    } catch (error) {
-      console.error("Failed to get data COA:", error);
-    }
-  };
+    const fetchDataCoa = async () => {
+      try {
+        const response = await API.get("/getdatacoa");
+        console.log("Data COA:", response.data.data);
+        setDataCoa(response.data.data);
+      } catch (error) {
+        console.error("Failed to get data COA:", error);
+      }
+    };
 
-  fetchCurrencies();
-  fetchDataCoa();
-}, []);
+    fetchCurrencies();
+    fetchDataCoa();
+  }, []);
 
-const handleChange = (e) => {
-  const { name, value, type, checked } = e.target;
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
-  if (name === "tipeAcc" && value === "General") {
-    setFormData({
-      ...formData,
-      [name]: value,
-      levelAcc: 1, // Reset levelAcc jika tipeAcc diubah ke General
-      groupAcc: "", // Reset groupAcc jika tipeAcc diubah ke General
-    });
-    setFilteredParents([]);
-  } else if (name === "tipeAcc" && value === "Detail") {
-    setFormData({
-      ...formData,
-      [name]: value,
-      levelAcc: 1,
-      parentAcc: "",
-      groupAcc: "",
-    });
-    setFilteredParents([]); //Refresh Parent saat pilih detail
-  } else if (name === "levelAcc" && formData.tipeAcc === "General") {
-    const levelBaru = parseInt(value, 10);
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    if (levelBaru > 1) {
-      const parents = dataCoa.filter(
-        (item) => item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
-      );
-      setFilteredParents(parents);
-    } else {
-      setFilteredParents([]);
-    }
-  } else if (name === "levelAcc" && formData.tipeAcc === "Detail") {
-    const levelBaru = parseInt(value, 10);
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    if (levelBaru > 1) {
-      // Jika tipeAcc Detail, cari parent dari tipeAcc General dengan levelAcc - 1
-      const parents = dataCoa.filter(
-        (item) => item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
-      );
-      setFilteredParents(parents);
-    } else {
-      setFilteredParents([]);
-    }
-  } else if (
-    name === "parentAcc" &&
-    formData.tipeAcc === "General" &&
-    formData.levelAcc > 1
-  ) {
-    const pilihParent = dataCoa.find(
-      (item) =>
-        parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
-        item.levelAcc === parseInt(formData.levelAcc, 10) - 1
-    );
-
-    if (!pilihParent) {
-      alert("Parent Account tidak valid.");
+    if (name === "tipeAcc" && value === "General") {
       setFormData({
         ...formData,
-        [name]: "",
-        groupAcc: "",
+        [name]: value,
+        levelAcc: 1, // Reset levelAcc jika tipeAcc diubah ke General
+        groupAcc: "", // Reset groupAcc jika tipeAcc diubah ke General
       });
-      return;
-    }
-
-    setFormData({
-      ...formData,
-      [name]: value,
-      groupAcc: pilihParent.groupAcc || "", // Isi groupAcc otomatis berdasarkan parentAcc
-    });
-  } else if (
-    name === "parentAcc" &&
-    formData.tipeAcc === "Detail" &&
-    formData.levelAcc > 1
-  ) {
-    // Ketika tipeAcc Detail, cari parentAcc dari tipeAcc General
-    const pilihParent = dataCoa.find(
-      (item) =>
-        parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
-        item.tipeAcc === "General" && // Cek tipeAcc General
-        item.levelAcc === parseInt(formData.levelAcc, 10) - 1 // Cari levelAcc - 1
-    );
-
-    if (!pilihParent) {
-      alert("Parent Account tidak valid.");
+      setFilteredParents([]);
+    } else if (name === "tipeAcc" && value === "Detail") {
       setFormData({
         ...formData,
-        [name]: "",
+        [name]: value,
+        levelAcc: 1,
+        parentAcc: "",
         groupAcc: "",
       });
-      return;
-    }
+      setFilteredParents([]); //Refresh Parent saat pilih detail
+    } else if (name === "levelAcc" && formData.tipeAcc === "General") {
+      const levelBaru = parseInt(value, 10);
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
 
-    setFormData({
-      ...formData,
-      [name]: value,
-      groupAcc: pilihParent.groupAcc || "", // Isi groupAcc otomatis berdasarkan parentAcc
-    });
-  } else if (name === "id_matauang") {
-    const pilihCcy = currencies.find(
-      (currency) => currency.id === parseInt(value, 10)
-    );
-    const isCcy = pilihCcy?.ccy === "IDR" || pilihCcy?.ccy === "SGD";
-    setIsGainLossDisabled(!isCcy);
-    setFormData({
-      ...formData,
-      [name]: value,
-      gainloss: isCcy ? formData.gainloss : false,
-    });
-  } else {
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  }
-};
+      if (levelBaru > 1) {
+        const parents = dataCoa.filter(
+          (item) =>
+            item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
+        );
+        setFilteredParents(parents);
+      } else {
+        setFilteredParents([]);
+      }
+    } else if (name === "levelAcc" && formData.tipeAcc === "Detail") {
+      const levelBaru = parseInt(value, 10);
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+
+      if (levelBaru > 1) {
+        // Jika tipeAcc Detail, cari parent dari tipeAcc General dengan levelAcc - 1
+        const parents = dataCoa.filter(
+          (item) =>
+            item.tipeAcc === "General" && item.levelAcc === levelBaru - 1
+        );
+        setFilteredParents(parents);
+      } else {
+        setFilteredParents([]);
+      }
+    } else if (
+      name === "parentAcc" &&
+      formData.tipeAcc === "General" &&
+      formData.levelAcc > 1
+    ) {
+      const pilihParent = dataCoa.find(
+        (item) =>
+          parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
+          item.levelAcc === parseInt(formData.levelAcc, 10) - 1
+      );
+
+      if (!pilihParent) {
+        alert("Parent Account tidak valid.");
+        setFormData({
+          ...formData,
+          [name]: "",
+          groupAcc: "",
+        });
+        return;
+      }
+
+      setFormData({
+        ...formData,
+        [name]: value,
+        groupAcc: pilihParent.groupAcc || "", // Isi groupAcc otomatis berdasarkan parentAcc
+      });
+    } else if (
+      name === "parentAcc" &&
+      formData.tipeAcc === "Detail" &&
+      formData.levelAcc > 1
+    ) {
+      // Ketika tipeAcc Detail, cari parentAcc dari tipeAcc General
+      const pilihParent = dataCoa.find(
+        (item) =>
+          parseInt(item.kodeAcc, 10) === parseInt(value, 10) &&
+          item.tipeAcc === "General" && // Cek tipeAcc General
+          item.levelAcc === parseInt(formData.levelAcc, 10) - 1 // Cari levelAcc - 1
+      );
+
+      if (!pilihParent) {
+        alert("Parent Account tidak valid.");
+        setFormData({
+          ...formData,
+          [name]: "",
+          groupAcc: "",
+        });
+        return;
+      }
+
+      setFormData({
+        ...formData,
+        [name]: value,
+        groupAcc: pilihParent.groupAcc || "", // Isi groupAcc otomatis berdasarkan parentAcc
+      });
+    } else if (name === "id_matauang") {
+      const pilihCcy = currencies.find(
+        (currency) => currency.id === parseInt(value, 10)
+      );
+      const isCcy = pilihCcy?.ccy === "IDR" || pilihCcy?.ccy === "SGD";
+      setIsGainLossDisabled(!isCcy);
+      setFormData({
+        ...formData,
+        [name]: value,
+        gainloss: isCcy ? formData.gainloss : false,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === "checkbox" ? checked : value,
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -180,16 +182,28 @@ const handleChange = (e) => {
       alert("GroupAcc harus diisi berdasarkan Parent Account.");
       return;
     }
-
     try {
       await API.post("/adddatacoa", formData);
+      setErrorMessage("");
       alert("Simpadn data Succes");
       navigate("/data-coa");
     } catch (error) {
       console.error("Failed to submit data:", error);
-      const serverMessage =
-        error.response?.data?.message || "An error occurred on the server.";
-      alert(`Server error: ${serverMessage}`);
+      // const serverMessage =
+      //   error.response?.data?.message || "An error occurred on the server.";
+      // alert(`Server error: ${serverMessage}`);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setErrorMessage(error.response.data.message);
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3000);
+      } else {
+        setErrorMessage("Terjadi kesalahan saat menambahkan data");
+      }
     }
   };
 
@@ -201,6 +215,11 @@ const handleChange = (e) => {
             Back to Data COA
           </Button>
         </div>
+        {errorMessage && (
+          <div className="alert alert-danger text-center fw-bold" role="alert">
+            {errorMessage}
+          </div>
+        )}
         <Form.Group className="mb-3" controlId="kodeAcc">
           <Form.Label>Acc Code</Form.Label>
           <Form.Control

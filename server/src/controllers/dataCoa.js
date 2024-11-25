@@ -18,12 +18,32 @@ exports.addDataCoa = async (req, res) => {
     const cekIdMtunag = id_matauang || null;
     if (cekIdMtunag) {
       const dataMataUang = await tb_mtuang.findOne({
-        wher: { id: cekIdMtunag },
+        where: { id: cekIdMtunag },
       });
       if (!dataMataUang) {
         return res.status(400).send({
           status: "failed",
           message: "id_matauang tidak ditemukan di tabel tb_mtuang",
+        });
+      }
+    }
+
+    // ini pengecekan kode acc saat input
+    // if (!kodeAcc || kodeAcc.trim() === "") {
+    //   return res.status(400).send({
+    //     status: "failed",
+    //     message: "Kode Acc tidak boleh kosong",
+    //   });
+    // }
+    const cekKodeAcc = kodeAcc;
+    if (cekKodeAcc) {
+      const dataKode = await tb_coa.findOne({
+        where: { kodeAcc: cekKodeAcc },
+      });
+      if (dataKode) {
+        return res.status(400).send({
+          status: "Failed",
+          message: "Kode Acc sudah ada dan tidak boleh sama",
         });
       }
     }
@@ -188,7 +208,7 @@ exports.updateCoa = async (req, res) => {
     if (dataCoa.id_matauang !== null) {
       return res.status(400).send({
         status: "failed",
-        message: `Data COA dengan id ${id} tidak dapat diupdate karena memiliki id_matauang`,
+        message: `Data COA dengan tidak dapat diupdate karena memiliki matauang`,
       });
     }
 
