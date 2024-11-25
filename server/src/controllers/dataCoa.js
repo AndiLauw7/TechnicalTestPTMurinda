@@ -146,27 +146,7 @@ exports.deleteCoa = async (req, res) => {
         message: `Data COA dengan id tidak dapat dihapus karena memiliki nilai currency`,
       });
     }
-    // const relasi = await tb_coa.count({
-    //   where: { id_matauang: id },
-    // });
-
-    // console.log("Jumlah relasi ditemukan:", relasi);
-
-    // if (relasi > 0) {
-    //   return res.status(400).send({
-    //     status: "failed",
-    //     message: `cannot delete coa ${id} karena terikat dengan tabel mata uang`,
-    //   });
-    // }
-    // const relasi = await tb_coa.findOne({
-    //   where: { id_matauang: id },
-    // });
-    // if (relasi) {
-    //   return res.status(400).send({
-    //     status: "failed",
-    //     message: `cannot delete coa ${id} karena terikat dengan tabel mata uang`,
-    //   });
-    // }
+   
     await tb_coa.destroy({ where: { id } });
     res.status(200).send({
       status: "success",
