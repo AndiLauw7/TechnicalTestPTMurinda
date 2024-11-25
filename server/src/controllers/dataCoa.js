@@ -111,12 +111,21 @@ exports.getDataCoa = async (req, res) => {
       });
     }
 
-    const formatedData = JSON.parse(JSON.stringify(data));
-
+    // const formatedData = JSON.parse(JSON.stringify(data));
+    // const sortedData = data
+    //   .map((item) => item.toJSON()) // Mengubah model Sequelize ke object biasa
+    //   .sort((a, b) => a.kodeAcc.localeCompare(b.kodeAcc)); // Sorting data
+    const sortedData = data
+      .map((item) => item.toJSON())
+      .sort((a, b) => {
+        // console.log("Comparing:", a.kodeAcc, b.kodeAcc);
+        return String(a.kodeAcc).localeCompare(String(b.kodeAcc));
+      });
     res.status(200).send({
       status: "success",
       message: "Successfully fetched data",
-      data: formatedData,
+      // data: formatedData,
+      data: sortedData,
     });
   } catch (error) {
     console.error(error); // Untuk debugging
